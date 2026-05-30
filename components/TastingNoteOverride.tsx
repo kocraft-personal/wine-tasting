@@ -10,6 +10,30 @@ interface TastingNoteOverrideProps {
   onChange: (custom: CustomOptions | null) => void;
 }
 
+const LABEL_STYLE: React.CSSProperties = {
+  fontFamily: "var(--font-heading)",
+  fontSize: "0.58rem",
+  letterSpacing: "0.2em",
+  textTransform: "uppercase",
+  color: "var(--color-champagne)",
+  opacity: 0.55,
+  display: "block",
+  marginBottom: "6px",
+};
+
+const TAG_STYLE: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "5px",
+  padding: "0.18rem 0.55rem",
+  border: "1px solid rgba(212,184,106,0.3)",
+  borderRadius: "100px",
+  fontSize: "0.72rem",
+  fontFamily: "var(--font-body)",
+  color: "var(--color-champagne)",
+  background: "rgba(212,184,106,0.06)",
+};
+
 function TagEditor({
   label,
   tags,
@@ -23,56 +47,73 @@ function TagEditor({
 
   function addTag() {
     const v = input.trim();
-    if (v && !tags.includes(v)) {
-      onChange([...tags, v]);
-    }
+    if (v && !tags.includes(v)) onChange([...tags, v]);
     setInput("");
   }
 
-  function removeTag(i: number) {
-    onChange(tags.filter((_, idx) => idx !== i));
-  }
-
   return (
-    <div className="mb-3">
-      <p className="section-label mb-1" style={{ opacity: 0.6, fontSize: "0.6rem" }}>
-        {label}
-      </p>
-      <div className="flex flex-wrap gap-1 mb-1.5">
+    <div>
+      <span style={LABEL_STYLE}>{label}</span>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", marginBottom: "8px" }}>
         {tags.map((t, i) => (
-          <span
-            key={i}
-            className="pill selected"
-            style={{ fontSize: "0.72rem", padding: "0.15rem 0.5rem", gap: "0.3rem", cursor: "default" }}
-          >
+          <span key={i} style={TAG_STYLE}>
             {t}
             <button
               type="button"
-              onClick={() => removeTag(i)}
-              style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", lineHeight: 1, padding: 0 }}
+              onClick={() => onChange(tags.filter((_, idx) => idx !== i))}
+              style={{
+                background: "none",
+                border: "none",
+                color: "rgba(212,184,106,0.5)",
+                cursor: "pointer",
+                padding: 0,
+                lineHeight: 1,
+                fontSize: "0.85rem",
+              }}
             >
               ×
             </button>
           </span>
         ))}
       </div>
-      <div className="flex gap-1">
+
+      <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
           placeholder="Add option…"
-          className="input-wine"
-          style={{ padding: "0.25rem 0.5rem", fontSize: "0.78rem", flex: 1 }}
+          style={{
+            flex: 1,
+            background: "rgba(245,235,214,0.05)",
+            border: "none",
+            borderBottom: "1px solid rgba(212,184,106,0.3)",
+            padding: "0.3rem 0.25rem",
+            fontSize: "0.78rem",
+            fontFamily: "var(--font-body)",
+            color: "var(--color-champagne)",
+            outline: "none",
+          }}
         />
         <button
           type="button"
           onClick={addTag}
-          className="btn-secondary"
-          style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+          style={{
+            background: "none",
+            border: "none",
+            padding: "0.25rem 0.1rem",
+            fontSize: "0.72rem",
+            fontFamily: "var(--font-heading)",
+            letterSpacing: "0.1em",
+            color: "var(--color-champagne)",
+            opacity: 0.5,
+            cursor: "pointer",
+            textTransform: "uppercase",
+          }}
         >
-          Add
+          + Add
         </button>
       </div>
     </div>
@@ -102,28 +143,43 @@ export default function TastingNoteOverride({
     onChange({ ...current, ...partial });
   }
 
+  const divider = (
+    <div style={{ borderTop: "1px solid rgba(212,184,106,0.1)", margin: "12px 0" }} />
+  );
+
   return (
-    <div className="mt-2">
+    <div style={{ marginTop: "8px" }}>
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="btn-ghost"
-        style={{ padding: "0.25rem 0", fontSize: "0.8rem", color: "var(--color-champagne)", opacity: 0.7 }}
+        style={{
+          background: "none",
+          border: "none",
+          padding: 0,
+          cursor: "pointer",
+          fontFamily: "var(--font-heading)",
+          fontSize: "0.62rem",
+          letterSpacing: "0.15em",
+          textTransform: "uppercase",
+          color: "var(--color-champagne)",
+          opacity: 0.45,
+        }}
       >
         {open ? "▾" : "▸"} Customize Tasting Notes
       </button>
 
       {open && (
         <div
-          className="mt-3 p-4 space-y-1"
           style={{
-            background: "rgba(245,235,214,0.04)",
+            marginTop: "10px",
+            padding: "14px 16px",
             border: "1px solid rgba(212,184,106,0.15)",
             borderRadius: "2px",
+            background: "rgba(0,0,0,0.15)",
           }}
         >
           <TagEditor
-            label="Appearance Colors"
+            label="Colors"
             tags={current.colors?.map((c) => c.label) ?? []}
             onChange={(labels) =>
               patch({
@@ -134,80 +190,88 @@ export default function TastingNoteOverride({
               })
             }
           />
+          {divider}
           <TagEditor
-            label="Clarity Options"
+            label="Clarity"
             tags={current.clarity ?? []}
             onChange={(tags) => patch({ clarity: tags })}
           />
+          {divider}
           <TagEditor
             label={`Aromas — ${current.aromas?.fruity_label ?? "Fruity"}`}
             tags={current.aromas?.fruity ?? []}
-            onChange={(tags) =>
-              patch({ aromas: { ...current.aromas, fruity: tags } })
-            }
+            onChange={(tags) => patch({ aromas: { ...current.aromas, fruity: tags } })}
           />
+          {divider}
           <TagEditor
             label={`Aromas — ${current.aromas?.non_fruity_label ?? "Other"}`}
             tags={current.aromas?.non_fruity ?? []}
-            onChange={(tags) =>
-              patch({ aromas: { ...current.aromas, non_fruity: tags } })
-            }
+            onChange={(tags) => patch({ aromas: { ...current.aromas, non_fruity: tags } })}
           />
+          {divider}
           <TagEditor
             label="Sweetness"
             tags={current.taste?.sweet ?? []}
-            onChange={(tags) =>
-              patch({ taste: { ...current.taste, sweet: tags } })
-            }
+            onChange={(tags) => patch({ taste: { ...current.taste, sweet: tags } })}
           />
+          {divider}
           <TagEditor
             label="Acidity"
             tags={current.taste?.acidity ?? []}
-            onChange={(tags) =>
-              patch({ taste: { ...current.taste, acidity: tags } })
-            }
+            onChange={(tags) => patch({ taste: { ...current.taste, acidity: tags } })}
           />
+          {divider}
           <TagEditor
             label="Body"
             tags={current.taste?.body ?? []}
-            onChange={(tags) =>
-              patch({ taste: { ...current.taste, body: tags } })
-            }
+            onChange={(tags) => patch({ taste: { ...current.taste, body: tags } })}
           />
+          {divider}
           <TagEditor
             label="Finish"
             tags={current.taste?.finish ?? []}
-            onChange={(tags) =>
-              patch({ taste: { ...current.taste, finish: tags } })
-            }
+            onChange={(tags) => patch({ taste: { ...current.taste, finish: tags } })}
           />
           {(current.taste?.tannin ?? defaults.taste.tannin) && (
-            <TagEditor
-              label="Tannin"
-              tags={current.taste?.tannin ?? defaults.taste.tannin ?? []}
-              onChange={(tags) =>
-                patch({ taste: { ...current.taste, tannin: tags } })
-              }
-            />
+            <>
+              {divider}
+              <TagEditor
+                label="Tannin"
+                tags={current.taste?.tannin ?? defaults.taste.tannin ?? []}
+                onChange={(tags) => patch({ taste: { ...current.taste, tannin: tags } })}
+              />
+            </>
           )}
           {(current.taste?.bubbles ?? defaults.taste.bubbles) && (
-            <TagEditor
-              label="Bubbles"
-              tags={current.taste?.bubbles ?? defaults.taste.bubbles ?? []}
-              onChange={(tags) =>
-                patch({ taste: { ...current.taste, bubbles: tags } })
-              }
-            />
+            <>
+              {divider}
+              <TagEditor
+                label="Bubbles"
+                tags={current.taste?.bubbles ?? defaults.taste.bubbles ?? []}
+                onChange={(tags) => patch({ taste: { ...current.taste, bubbles: tags } })}
+              />
+            </>
           )}
 
-          <button
-            type="button"
-            onClick={() => onChange(null)}
-            className="btn-ghost"
-            style={{ padding: "0.25rem 0", fontSize: "0.75rem", color: "var(--color-rose)", opacity: 0.7 }}
-          >
-            Reset to defaults
-          </button>
+          <div style={{ borderTop: "1px solid rgba(212,184,106,0.1)", marginTop: "14px", paddingTop: "10px" }}>
+            <button
+              type="button"
+              onClick={() => onChange(null)}
+              style={{
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+                fontFamily: "var(--font-heading)",
+                fontSize: "0.6rem",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "rgba(201,123,123,0.6)",
+              }}
+            >
+              Reset to defaults
+            </button>
+          </div>
         </div>
       )}
     </div>
