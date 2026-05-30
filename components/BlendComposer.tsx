@@ -1,7 +1,8 @@
 "use client";
 
-import { WINE_STYLE_KEYS } from "@/lib/wineStyles";
+import { WINE_STYLE_KEYS, WINE_STYLES } from "@/lib/wineStyles";
 import type { BlendComponent } from "@/lib/types";
+import SearchableSelect from "./SearchableSelect";
 
 interface BlendComposerProps {
   components: BlendComponent[];
@@ -34,18 +35,14 @@ export default function BlendComposer({ components, onChange }: BlendComposerPro
 
       {components.map((comp, i) => (
         <div key={i} className="flex gap-2 items-center">
-          <select
+          <SearchableSelect
             value={comp.varietal}
-            onChange={(e) => updateRow(i, "varietal", e.target.value)}
-            className="input-wine flex-1"
-            style={{ padding: "0.35rem 0.5rem", fontSize: "0.82rem" }}
-          >
-            <option value="">Select varietal…</option>
-            {WINE_STYLE_KEYS.filter((k) => k !== "blend" && k !== comp.varietal).map((k) => (
-              <option key={k} value={k}>{k}</option>
-            ))}
-            {comp.varietal && <option value={comp.varietal}>{comp.varietal}</option>}
-          </select>
+            onChange={(v) => updateRow(i, "varietal", v)}
+            options={WINE_STYLE_KEYS}
+            placeholder="Search varietal…"
+            getLabel={(k) => WINE_STYLES[k]?.label ?? k}
+            style={{ flex: 1 }}
+          />
 
           <div className="flex items-center gap-1" style={{ minWidth: "80px" }}>
             <input

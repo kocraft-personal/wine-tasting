@@ -22,7 +22,7 @@ interface WineCardProps {
 function resolveOptions(wine: WtSessionWine) {
   if (wine.custom_options) {
     const d = wine.wine_style === "blend"
-      ? mergeBlendProfiles((wine.blend_composition ?? []).map((c) => c.varietal).filter(Boolean))
+      ? mergeBlendProfiles((wine.blend_composition ?? []).filter((c) => c.varietal))
       : (wine.varietal ? WINE_STYLES[wine.varietal] : null) ?? Object.values(WINE_STYLES)[0];
     return {
       colors: wine.custom_options.colors ?? d.colors,
@@ -38,10 +38,7 @@ function resolveOptions(wine: WtSessionWine) {
     };
   }
   if (wine.wine_style === "blend") {
-    const merged = mergeBlendProfiles(
-      (wine.blend_composition ?? []).map((c) => c.varietal).filter(Boolean)
-    );
-    return merged;
+    return mergeBlendProfiles((wine.blend_composition ?? []).filter((c) => c.varietal));
   }
   const profile = wine.varietal ? WINE_STYLES[wine.varietal] : null;
   return profile ?? Object.values(WINE_STYLES)[0];

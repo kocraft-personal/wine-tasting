@@ -5,6 +5,7 @@ import { mergeBlendProfiles } from "@/lib/blendUtils";
 import type { BlendComponent, CustomOptions } from "@/lib/types";
 import BlendComposer from "./BlendComposer";
 import TastingNoteOverride from "./TastingNoteOverride";
+import SearchableSelect from "./SearchableSelect";
 
 export interface WineRowData {
   wine_name: string;
@@ -92,24 +93,18 @@ export default function WineRowInput({ index, data, onChange, onRemove, canRemov
         <label className="section-label block mb-1" style={{ color: "var(--color-champagne)", opacity: 0.6 }}>
           Varietal / Type
         </label>
-        <select
+        <SearchableSelect
           value={data.varietal}
-          onChange={(e) => {
-            const v = e.target.value;
-            patch({
-              varietal: v,
-              blend_composition: v === "BLEND" ? [{ varietal: "", pct: 50 }, { varietal: "", pct: 50 }] : [],
-              custom_options: null,
-            });
-          }}
-          className="input-wine"
-        >
-          <option value="">Select varietal…</option>
-          <option value="BLEND">— Blend (multi-varietal) —</option>
-          {WINE_STYLE_KEYS.map((k) => (
-            <option key={k} value={k}>{k}</option>
-          ))}
-        </select>
+          onChange={(v) => patch({
+            varietal: v,
+            blend_composition: v === "BLEND" ? [{ varietal: "", pct: 50 }, { varietal: "", pct: 50 }] : [],
+            custom_options: null,
+          })}
+          options={WINE_STYLE_KEYS}
+          placeholder="Search varietal…"
+          leadingOptions={[{ value: "BLEND", label: "— Blend (multi-varietal) —" }]}
+          getLabel={(k) => WINE_STYLES[k]?.label ?? k}
+        />
       </div>
 
       {/* Blend composer */}
@@ -138,16 +133,12 @@ export default function WineRowInput({ index, data, onChange, onRemove, canRemov
           <label className="section-label block mb-1" style={{ color: "var(--color-champagne)", opacity: 0.6 }}>
             Country (optional)
           </label>
-          <select
+          <SearchableSelect
             value={data.country}
-            onChange={(e) => patch({ country: e.target.value })}
-            className="input-wine"
-          >
-            <option value="">—</option>
-            {COUNTRIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
+            onChange={(v) => patch({ country: v })}
+            options={COUNTRIES}
+            placeholder="Country…"
+          />
         </div>
       </div>
 
