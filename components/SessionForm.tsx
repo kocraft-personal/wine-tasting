@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import WineRowInput, { type WineRowData } from "./WineRowInput";
+import type { WelcomeSettings } from "@/lib/types";
 
 function emptyWine(): WineRowData {
   return {
@@ -18,6 +19,12 @@ function emptyWine(): WineRowData {
 export default function SessionForm() {
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
+  const [welcomeSettings, setWelcomeSettings] = useState<WelcomeSettings>({
+    eyebrow: "",
+    subtitle: "",
+    note: "",
+    signoff: "",
+  });
   const [wines, setWines] = useState<WineRowData[]>([emptyWine()]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -33,6 +40,10 @@ export default function SessionForm() {
 
   function removeWine(i: number) {
     setWines((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  function updateWelcomeSetting(key: keyof WelcomeSettings, value: string) {
+    setWelcomeSettings((prev) => ({ ...prev, [key]: value }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -54,7 +65,7 @@ export default function SessionForm() {
       const res = await fetch("/api/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), tasting_date: date || null, wines }),
+        body: JSON.stringify({ name: name.trim(), tasting_date: date || null, welcome_settings: welcomeSettings, wines }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to create session");
@@ -100,6 +111,72 @@ export default function SessionForm() {
             onChange={(e) => setDate(e.target.value)}
             className="input-wine"
             style={{ colorScheme: "light" }}
+          />
+        </div>
+      </div>
+
+      {/* Welcome page */}
+      <div
+        className="p-6 space-y-4"
+        style={{
+          background: "rgba(245,235,214,0.04)",
+          border: "1px solid rgba(212,184,106,0.2)",
+          borderRadius: "2px",
+        }}
+      >
+        <div>
+          <label className="section-label block mb-1.5" style={{ color: "var(--color-champagne)" }}>
+            Welcome Eyebrow (optional)
+          </label>
+          <input
+            type="text"
+            value={welcomeSettings.eyebrow ?? ""}
+            onChange={(e) => updateWelcomeSetting("eyebrow", e.target.value)}
+            placeholder="VOLUME 01 / A PRIVATE TASTING PROGRAMME / EST. TONIGHT"
+            className="input-wine"
+            maxLength={90}
+          />
+        </div>
+
+        <div>
+          <label className="section-label block mb-1.5" style={{ color: "var(--color-champagne)" }}>
+            Welcome Subtitle (optional)
+          </label>
+          <input
+            type="text"
+            value={welcomeSettings.subtitle ?? ""}
+            onChange={(e) => updateWelcomeSetting("subtitle", e.target.value)}
+            placeholder="A candlelit survey of the pours on tonight's table."
+            className="input-wine"
+            maxLength={120}
+          />
+        </div>
+
+        <div>
+          <label className="section-label block mb-1.5" style={{ color: "var(--color-champagne)" }}>
+            Host Note (optional)
+          </label>
+          <textarea
+            value={welcomeSettings.note ?? ""}
+            onChange={(e) => updateWelcomeSetting("note", e.target.value)}
+            placeholder="Pour about two fingers, start light, move toward bold, and save the labels until the blind round."
+            className="input-wine"
+            rows={3}
+            maxLength={220}
+          />
+        </div>
+
+        <div>
+          <label className="section-label block mb-1.5" style={{ color: "var(--color-champagne)" }}>
+            Signoff (optional)
+          </label>
+          <input
+            type="text"
+            value={welcomeSettings.signoff ?? ""}
+            onChange={(e) => updateWelcomeSetting("signoff", e.target.value)}
+            placeholder="In good taste"
+            className="input-wine"
+            maxLength={60}
           />
         </div>
       </div>

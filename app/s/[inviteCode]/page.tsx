@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { WtSession, WtSessionWine, WtRating, WtProfile } from "@/lib/types";
 import WineCard from "@/components/WineCard";
 import ProgressBar from "@/components/ProgressBar";
+import WelcomePage from "@/components/WelcomePage";
 
 export default function TastingPage() {
   const { inviteCode } = useParams<{ inviteCode: string }>();
@@ -20,6 +21,7 @@ export default function TastingPage() {
   const [profile, setProfile] = useState<WtProfile | null>(null);
   const [ratedWines, setRatedWines] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -53,6 +55,7 @@ export default function TastingPage() {
         return;
       }
       setSession(sess);
+      setShowWelcome(sessionStorage.getItem(`wt-welcome-seen-${inviteCode}`) !== "1");
 
       const { data: wineData } = await supabase
         .from("wt_session_wines")
@@ -94,6 +97,11 @@ export default function TastingPage() {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  function startTasting() {
+    sessionStorage.setItem(`wt-welcome-seen-${inviteCode}`, "1");
+    setShowWelcome(false);
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-dark-wine flex items-center justify-center">
@@ -109,6 +117,19 @@ export default function TastingPage() {
       <div className="min-h-screen bg-dark-wine flex items-center justify-center">
         <p style={{ color: "var(--color-rose)", fontFamily: "var(--font-body)" }}>{error || "Session not found."}</p>
       </div>
+    );
+  }
+
+  if (showWelcome) {
+    return (
+      <WelcomePage
+        session={session}
+        wines={wines}
+        profile={profile}
+        copied={copied}
+        onCopy={copyLink}
+        onStart={startTasting}
+      />
     );
   }
 

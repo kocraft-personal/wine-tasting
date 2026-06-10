@@ -25,7 +25,15 @@ export interface WtSession {
   created_by: string;
   invite_code: string;
   is_active: boolean;
+  welcome_settings: WelcomeSettings | null;
   created_at: string;
+}
+
+export interface WelcomeSettings {
+  eyebrow?: string;
+  subtitle?: string;
+  note?: string;
+  signoff?: string;
 }
 
 export interface BlendComponent {

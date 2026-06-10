@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { WINE_STYLES } from "@/lib/wineStyles";
-import { mergeBlendProfiles } from "@/lib/blendUtils";
 import type { WineRowData } from "@/components/WineRowInput";
+import type { WelcomeSettings } from "@/lib/types";
 
 function getWineStyle(varietal: string): string {
   if (varietal === "BLEND") return "blend";
@@ -29,9 +29,10 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { name, tasting_date, wines } = body as {
+  const { name, tasting_date, welcome_settings, wines } = body as {
     name: string;
     tasting_date: string | null;
+    welcome_settings?: WelcomeSettings;
     wines: WineRowData[];
   };
 
@@ -42,10 +43,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "At least one wine is required" }, { status: 400 });
   }
 
+  const cleanWelcomeSettings = welcome_settings
+    ? Object.fromEntries(
+        Object.entries(welcome_settings)
+          .map(([key, value]) => [key, typeof value === "string" ? value.trim() : ""])
+          .filter(([, value]) => value)
+      )
+    : null;
+
   // Create session
   const { data: session, error: sessionErr } = await supabase
     .from("wt_sessions")
-    .insert({ name: name.trim(), tasting_date: tasting_date ?? null, created_by: user.id })
+    .insert({
+      name: name.trim(),
+      tasting_date: tasting_date ?? null,
+      welcome_settings: cleanWelcomeSettings && Object.keys(cleanWelcomeSettings).length ? cleanWelcomeSettings : null,
+      created_by: user.id,
+    })
     .select("id, invite_code")
     .single();
 

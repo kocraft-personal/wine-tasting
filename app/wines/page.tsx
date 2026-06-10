@@ -275,7 +275,7 @@ export default function WineBrowsePage() {
                         </span>
                         {r.verdict_word && (
                           <span style={{ fontSize: "0.75rem", color: "rgba(26,14,10,0.5)", fontStyle: "italic" }}>
-                            "{r.verdict_word}"
+                            &quot;{r.verdict_word}&quot;
                           </span>
                         )}
                         {r.food_pairing && (
